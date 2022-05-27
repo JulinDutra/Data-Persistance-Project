@@ -21,8 +21,11 @@ public class MainManager : MonoBehaviour
     private int m_Points;
     public int bestScore;
     public string playerName;
+    public string bestPlayer;
     
     private bool m_GameOver = false;
+
+    bool isRecord = false;
 
     private void Awake()
     {
@@ -33,13 +36,13 @@ public class MainManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        //LoadColor();
     }
 
 
     void Start()
     {
+        MenuUI.Instance.gameObject.SetActive(false);
+        playerName = MenuUI.Instance.newName;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -55,7 +58,7 @@ public class MainManager : MonoBehaviour
             }
         }
 
-        BestScoreText.text = $"Best Score : " + playerName + ":" + LoadInfo();
+        BestScoreText.text = $"Best Score : " + LoadBestPlayerName() + ":" + LoadBestScore();
     }
 
     private void Update()
@@ -78,6 +81,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                BestScoreText.text = $"Best Score : " + bestPlayer + ":" + bestScore;
             }
         }
     }
@@ -88,15 +92,13 @@ public class MainManager : MonoBehaviour
         ScoreText.text = $"Score : {m_Points}";
         if(m_Points > bestScore)
         {
-            BestScoreText.text = $"Best Score : " + name + ":" + bestScore;
-
-            SaveData data = new SaveData();
-            data.name = name;
-            data.score = bestScore;
-
-            string json = JsonUtility.ToJson(data);
-
-            File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+            isRecord = true;
+            bestScore = m_Points;
+            bestPlayer = playerName;
+            BestScoreText.text = $"Best Score : " + bestPlayer + ":" + bestScore;
+            MainManager.Instance.bestScore = bestScore;
+            MainManager.Instance.bestPlayer = bestPlayer;
+            MainManager.Instance.BestScoreText = BestScoreText;
         }
     }
 
@@ -104,27 +106,29 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if(isRecord)
+            SaveInfo();
     }
 
     [System.Serializable]
     class SaveData
     {
-        public string name;
-        public int score;
+        public string bestPlayer;
+        public int bestScore;
     }
 
-    //public void SaveInfo()
-    //{
-    //    SaveData data = new SaveData(); 
-    //    data.name = name;
-    //    data.score = bestScore;
+    public void SaveInfo()
+    {
+        SaveData data = new SaveData(); 
+        data.bestPlayer = bestPlayer;
+        data.bestScore = bestScore;
 
-    //    string json = JsonUtility.ToJson(data);
+        string json = JsonUtility.ToJson(data);
 
-    //    File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-    //}
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
 
-    public int LoadInfo()
+    public int LoadBestScore()
     {
         string path = Application.persistentDataPath + "/savefile.json";
         if(File.Exists(path))
@@ -132,14 +136,34 @@ public class MainManager : MonoBehaviour
             string json = File.ReadAllText(path);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
 
-            bestScore = data.score;
-            name = data.name;
+            bestScore = data.bestScore;
+            bestPlayer = data.bestPlayer;
             return bestScore;
 
         }
         else
         {
             return 0;
+        }
+    }
+
+    public string LoadBestPlayerName()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            bestScore = data.bestScore;
+            bestPlayer = data.bestPlayer;
+            Debug.Log("Load BestPlayer: " + bestPlayer);
+            return bestPlayer;
+        }
+        else
+        {
+            Debug.Log("Retorno nulo.");
+            return null;
         }
     }
 }

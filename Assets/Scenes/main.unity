@@ -506,6 +506,7 @@ MonoBehaviour:
   GameOverText: {fileID: 474497238}
   bestScore: 0
   playerName: add
+  bestPlayer: 
 --- !u!1 &455529321
 GameObject:
   m_ObjectHideFlags: 0

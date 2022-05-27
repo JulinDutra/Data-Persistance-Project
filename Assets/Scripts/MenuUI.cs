@@ -12,7 +12,7 @@ public class MenuUI : MonoBehaviour
     public static MenuUI Instance;
 
     public TMP_InputField inputField;
-    private string newName;
+    public string newName;
 
     private void Awake()
     {
@@ -23,8 +23,6 @@ public class MenuUI : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-
-        //LoadColor();
     }
 
     void Start()
@@ -34,7 +32,7 @@ public class MenuUI : MonoBehaviour
 
     public void NewName(string newName)
     {
-        MainManager.Instance.playerName = newName;
+        MenuUI.Instance.newName = inputField.text;
     }
 
     public void StartNew()
